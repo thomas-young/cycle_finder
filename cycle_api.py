@@ -13,7 +13,11 @@ class ArbitrageCycle(Resource):
 
     def get(self):
         path, rates = arbitrage('Liquid/ETH')
-
+        product = 1.000000000000000000
+        for rate in rates:
+        	product = rate * product
+        	print(product)
+        #print(product)
         return json.dumps(path)
 
 api.add_resource(ArbitrageCycle, '/cycle')
