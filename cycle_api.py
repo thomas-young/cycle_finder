@@ -3,9 +3,11 @@ from flask_restful import Resource, Api
 import os
 import json
 from arbitrage import arbitrage
+from flask-cors import CORS
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 class ArbitrageCycle(Resource):
 
