@@ -20,6 +20,7 @@ def buildGraph(data):
     #     data = json.load(infile)
 
     # for each coin on each market, add the value to the dictionary
+
     for market in markets:
         for coin in data[market]:
             values[market + "/" + coin[0]] = float(coin[1])
@@ -132,7 +133,6 @@ def arbitrage(start_coin):
 
     # print(printPath(path, rates))
 
-    print(path)
     return path, rates
 
     # max = 0
@@ -146,10 +146,3 @@ def arbitrage(start_coin):
     #         starting_coin = c
     # print(max)
     # print(starting_coin)
-
-def main():
-    while True:
-        arbitrage('Liquid/ETH')
-        # sleep(1)
-
-main()
