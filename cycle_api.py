@@ -11,6 +11,7 @@ class ArbitrageCycle(Resource):
 
     def get(self):
         path, rates = arbitrage('Liquid/ETH')
+
         return json.dumps(path)
 
 api.add_resource(ArbitrageCycle, '/cycle')
