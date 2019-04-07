@@ -2,6 +2,7 @@ from math import log, exp
 import json
 import requests
 from time import sleep
+from random import shuffle
 
 def buildGraph(data):
     # initialize dictionary of coin market pairs to their values
@@ -12,15 +13,9 @@ def buildGraph(data):
     # all the other market/coin pairs, where the values are exchange rates
     graph = {}
 
-    # coins = ['ADA', 'BTC', 'DASH', 'EOS', 'ETH', 'LTC', 'TRX', 'XLM', 'XMR', 'XRP']
     markets = ['Binance', 'BitMEX', 'Bitfinex', 'Bithumb', 'Coinbase', 'Deribit', 'Huobi', 'Kraken', 'Kucoin', 'Liquid']
 
-    # # read json file
-    # with open(file, 'r') as infile:
-    #     data = json.load(infile)
-
     # for each coin on each market, add the value to the dictionary
-
     for market in markets:
         for coin in data[market]:
             values[market + "/" + coin[0]] = float(coin[1])
@@ -34,7 +29,7 @@ def buildGraph(data):
     return graph, values
 
 
-def bellman_ford(graph, source):
+def bellman_ford(graph, source, pairs):
     n = len(graph)
 
     # initialize distance and predecessor dictionaries
@@ -48,8 +43,10 @@ def bellman_ford(graph, source):
     # iterate through all edges n - 1 times (length of longest potential path)
     # relaxing each edge
     for i in range(n - 1):
-        for u in graph:
-            for v in graph[u]:
+        shuffle(pairs)
+        for u in pairs:
+            shuffle(pairs)
+            for v in pairs:
                 relax(graph, u, v, dist, pred)
 
     # iterate through edges again, checking for a negative cycle
@@ -57,7 +54,7 @@ def bellman_ford(graph, source):
     for u in graph:
         for v in graph[u]:
             if dist[v] > dist[u] + graph[u][v]:
-                return pathRetraceZ(graph, pred, v)
+                return pathRetrace(graph, pred, v)
 
     return None, None
 
@@ -74,7 +71,7 @@ def relax(graph, u, v, dist, pred):
         pred[u] = v
 
 
-def pathRetraceZ(graph, pred, v):
+def pathRetrace(graph, pred, v):
     trace = [v]
     curr = pred[v]
     while pred[curr] not in trace:
@@ -102,47 +99,30 @@ def pathRetraceZ(graph, pred, v):
 def printPath(path, rates):
     amount = 1
     string = "starting with {} {} coins".format(amount, path[0])
-    # print(string)
+    print(string)
 
     for i in range(1, len(path) - 1):
         amount *= rates[i - 1]
         string = "now {} {} coins".format(amount, path[i])
-        # print(string)
+        print(string)
 
     amount *= rates[-1]
     string = "now {} {} coins".format(amount, path[-1])
-    # print(string)
+    print(string)
+
     return amount
 
 
-def arbitrage(start_coin):
-
+def arbitrage(start_coin, pairs):
     response_market_data = requests.get('https://changechain-api-heroku.herokuapp.com/data')
     curr_data = response_market_data.json()
 
     graph, values = buildGraph(curr_data)
-    # graph, values = buildGraph('1554531720.json')
-    path, rates = bellman_ford(graph, start_coin)
+    path, rates = bellman_ford(graph, start_coin, pairs)
 
     if path == None:
         print("No positive cycle found")
-        return
-
-    # print(path)
-    # print(rates)
-
-    # print(printPath(path, rates))
+        return None, None
 
     return path, rates
 
-    # max = 0
-    # starting_coin = None
-    #
-    # for c in values:
-    #     path, rates = bellman_ford(graph, c)
-    #     amnt = printPath(path, rates)
-    #     if amnt > max:
-    #         max = amnt
-    #         starting_coin = c
-    # print(max)
-    # print(starting_coin)
